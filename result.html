@@ -1,0 +1,16 @@
+<table border="1">
+    <tr>
+        <th>First Name <a href="javascript:void(0)" ng-click="orderByProperty='firstName'">up</a> <a href="javascript:void(0)" ng-click="orderByProperty='-firstName'">down</a></th>
+        <th>Last Name <a href="javascript:void(0)" ng-click="orderByProperty='lastName'">up</a> <a href="javascript:void(0)" ng-click="orderByProperty='-lastName'">down</a></th>
+        <th>Gender Name</th>
+        <th>Occupation</th>
+        <th>Introduction</th>
+    </tr>
+    <tr ng-repeat="user in result | orderBy:orderByProperty">
+        <td ng-bind="user.firstName"></td>
+        <td ng-bind="user.lastName"></td>
+        <td ng-bind="user.gender | genderFilter"></td>
+        <td ng-bind="user.occupation | occupationFilter"></td>
+        <td ng-bind-html="user.introduction | html"></td>
+    </tr>
+</table>

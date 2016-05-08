@@ -1,0 +1,112 @@
+<!doctype html>
+<html ng-app="app">
+<head>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular-route.min.js"></script>
+    <script>
+        angular.module('app', ['ngRoute']);
+
+        angular.module('app').factory('userService', ['$http', '$q', function($http, $q) {
+            var searchResult;
+            return {
+                search: function() {
+                    return $q(function(resolve, reject) {
+                        $http.get('data.json').then(function(response) {
+                            // successful
+                            var data = response.data;
+                            if (data.success) {
+                                searchResult = data.users;
+                                resolve(searchResult);
+                            } else {
+                                reject('failed' + response);
+                            }
+                        }, function(response) {
+                            // failed
+                            reject('failed' + response.status);
+                        });
+                    });
+                },
+                getSearchResult: function() {
+                    return searchResult;
+                }
+            };
+        }]);
+
+        angular.module('app').controller('SearchCtrl', ['$scope', '$location', 'userService', function($scope, $location, userService) {
+            $scope.search = function() {
+                userService.search().then(function() {
+                    $location.path('/result');
+                });
+            }
+        }]);
+
+        angular.module('app').controller('ResultCtrl', ['$scope', '$location', 'userService', function($scope, $location, userService) {
+            var result = userService.getSearchResult();
+            if (result) {
+                $scope.result = result;
+            } else {
+                $location.path('/search');
+            }
+        }]);
+
+        angular.module('app').directive('onEnter', ['$parse', function($parse) {
+            return function(scope, element, attrs) {
+                element.bind("keydown keypress", function(event) {
+                    if(event.which === 13) {
+                        $parse(attrs['onEnter'])(scope, {$event:event});
+                        event.preventDefault();
+                    }
+                });
+            };
+        }]);
+
+        angular.module('app').filter('genderFilter', function() {
+            return function(input) {
+                if (input == 'M') {
+                    return 'Male';
+                } else {
+                    return 'Female';
+                }
+            };
+        });
+
+        angular.module('app').filter('occupationFilter', function() {
+            return function(input) {
+                if (input === 0) {
+                    return 'Worker';
+                } else if (input === 1) {
+                    return 'Farmer';
+                } else if (input === 2) {
+                    return 'Accountant';
+                }
+            };
+        });
+
+        angular.module('app').filter('html', ['$sce', function($sce) {
+            return function(txt) {
+                return $sce.trustAsHtml(txt);
+            };
+        }]);
+
+        angular.module('app').config(['$routeProvider', function($routeProvider) {
+            $routeProvider.
+                when('/search/', {
+                    templateUrl: 'search.html',
+                    controller: 'SearchCtrl'
+                }).
+                when('/result/', {
+                    templateUrl: 'result.html',
+                    controller: 'ResultCtrl'
+                }).
+                otherwise({
+                    redirectTo: '/search/'
+                });
+        }]);
+    </script>
+</head>
+<body>
+
+<div ng-view></div>
+
+</body>
+</html>
